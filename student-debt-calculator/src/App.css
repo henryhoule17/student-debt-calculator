@@ -1,0 +1,24 @@
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #121212;
+}
+
+.MuiContainer-root {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.MuiPaper-root {
+  height: 100%;
+  background-color: #1e1e1e !important;
+}
+
+.MuiAutocomplete-root .MuiOutlinedInput-root {
+  margin: 8px 0;
+}
+
+.recharts-wrapper {
+  margin: 0 auto;
+}
+
