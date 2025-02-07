@@ -4,14 +4,14 @@ import {
   CssBaseline,
   createTheme,
   Container,
-  Grid,
   Paper,
   TextField,
   Typography,
   Autocomplete,
   Box,
+  Grid2,
 } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 // Create dark theme
 const darkTheme = createTheme({
@@ -92,20 +92,14 @@ function App() {
     if (!major || !city || !monthlyPayment) return null;
 
     const annualSalary = major.salary;
-    const monthlySalary = annualSalary / 12;
-    const monthlyExpenses = city.costOfLiving;
-    const monthlyPaymentFloat = parseFloat(monthlyPayment);
 
-    const data = [];
-    for (let year = 1; year <= 5; year++) {
-      const salaryWithGrowth = annualSalary * Math.pow(1.03, year - 1); // 3% annual growth
-      const monthlySalaryWithGrowth = salaryWithGrowth / 12;
-      data.push({
-        year,
-        paymentRatio: (monthlyPaymentFloat / monthlySalaryWithGrowth * 100).toFixed(1),
-        expenseRatio: (monthlyExpenses / monthlySalaryWithGrowth * 100).toFixed(1),
-      });
-    }
+    const data = [{
+      year: 1,
+      monthlyPayment: parseFloat(monthlyPayment),
+      livingExpenses: city.costOfLiving,
+      monthlySalary: annualSalary / 12,
+      remainingIncome: (annualSalary / 12) - parseFloat(monthlyPayment) - city.costOfLiving
+    }];
 
     return data;
   };
@@ -115,14 +109,14 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '2px solid green'}}>
         <Typography variant="h3" gutterBottom align="center">
           Student Debt Calculator
         </Typography>
         
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3} sx={{ border: '2px solid blue' }} justifyContent="center">
           {/* Input Section */}
-          <Grid item xs={12} md={4}>
+          <Grid2 item xs={12} md={4} sx={{ width: '40%', border: '2px dashed red', padding: 1 }}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 Education Details
@@ -130,33 +124,51 @@ function App() {
               <Autocomplete
                 options={schools}
                 getOptionLabel={(option) => option.name}
+                sx={{ width: '100%' }}
                 renderInput={(params) => (
-                  <TextField {...params} label="School" margin="normal" />
+                  <TextField {...params} label="School" margin="normal" fullWidth />
                 )}
                 onChange={(_, newValue) => setSchool(newValue)}
               />
+              {school && (
+                <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                  4-Year Tuition: ${(school.tuition * 4).toLocaleString()}
+                </Typography>
+              )}
               <Autocomplete
                 options={majors}
                 getOptionLabel={(option) => option.name}
+                sx={{ width: '100%' }}
                 renderInput={(params) => (
-                  <TextField {...params} label="Major" margin="normal" />
+                  <TextField {...params} label="Major" margin="normal" fullWidth />
                 )}
                 onChange={(_, newValue) => setMajor(newValue)}
               />
+              {major && (
+                <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                  Starting Salary: ${major.salary.toLocaleString()}/year
+                </Typography>
+              )}
               <Autocomplete
                 options={cities}
                 getOptionLabel={(option) => option.name}
+                sx={{ width: '100%' }}
                 renderInput={(params) => (
-                  <TextField {...params} label="City" margin="normal" />
+                  <TextField {...params} label="City" margin="normal" fullWidth />
                 )}
                 onChange={(_, newValue) => setCity(newValue)}
               />
+              {city && (
+                <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                  Cost of Living: ${city.costOfLiving.toLocaleString()} per month
+                </Typography>
+              )}
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Loan Details Section */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 2 }}>
+          <Grid2 item xs={12} md={4} sx={{ width: '40%', border: '2px dashed red', padding: 1}}>
+            <Paper sx={{ p: 2, height: '100%' }}>
               <Typography variant="h6" gutterBottom>
                 Loan Details
               </Typography>
@@ -185,18 +197,18 @@ function App() {
                 onChange={(e) => setMonthlyPayment(e.target.value)}
               />
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Summary Section */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 2 }}>
+          <Grid2 item xs={12} md={4} sx={{ width: '82%', border: '2px dashed red', padding: 1 }}>
+            <Paper sx={{ p: 2, width: '100%' }}>
               <Typography variant="h6" gutterBottom>
                 Loan Summary
               </Typography>
               {metrics && (
                 <>
                   <Typography variant="body1">
-                    Years to Pay Off: {metrics.yearsToPayoff}
+                    Payoff Period: {`${Math.floor(metrics.yearsToPayoff)} years and ${Math.round((metrics.yearsToPayoff % 1) * 12)} months`}
                   </Typography>
                   <Typography variant="body1">
                     Total Interest: ${metrics.totalInterest.toLocaleString()}
@@ -207,10 +219,10 @@ function App() {
                 </>
               )}
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Debt Over Time Graph */}
-          <Grid item xs={12} md={6}>
+          <Grid2 item xs={12} md={6}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 Debt Over Time
@@ -223,32 +235,35 @@ function App() {
                   <Tooltip />
                   <Legend />
                   <Line type="monotone" dataKey="balance" stroke="#8884d8" name="Remaining Balance" />
-                  <Line type="monotone" dataKey="totalPaid" stroke="#82ca9d" name="Total Paid" />
+                  <Line type="monotone" dataKey="totalPaid" stroke="#82ca9d" name="Total AmountPaid" />
                 </LineChart>
               )}
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Salary and Expenses Graph */}
-          <Grid item xs={12} md={6}>
+          <Grid2 item xs={12} md={6}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
-                Monthly Expenses as % of Salary
+                Monthly Income vs. Expenses
               </Typography>
               {salaryMetrics && (
-                <LineChart width={500} height={300} data={salaryMetrics}>
+                <BarChart width={500} height={300} data={salaryMetrics}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="year" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value) => `$${value.toLocaleString()}`}
+                  />
                   <Legend />
-                  <Line type="monotone" dataKey="paymentRatio" stroke="#8884d8" name="Loan Payment %" />
-                  <Line type="monotone" dataKey="expenseRatio" stroke="#82ca9d" name="Living Expenses %" />
-                </LineChart>
+                  <Bar name="Monthly Income" dataKey="monthlySalary" fill="#82ca9d" />
+                  <Bar name="Monthly Expenses" stackId="expenses" dataKey="monthlyPayment" fill="#8884d8" />
+                  <Bar name="Living Expenses" stackId="expenses" dataKey="livingExpenses" fill="#ff8042" />
+                </BarChart>
               )}
             </Paper>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Container>
     </ThemeProvider>
   );
