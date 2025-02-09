@@ -23,3 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 student-debt-calculator/backend/College_Scorecard_Raw_Data_01162025/
+student-debt-calculator/extra_data/
